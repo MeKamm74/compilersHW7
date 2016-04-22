@@ -59,6 +59,13 @@ extern "C" {
 #define MULT_OP	      99
 #define DIV_OP        98
 
+#define GT_OP         106
+#define GE_OP         107
+#define LT_OP         108
+#define LE_OP         109
+#define EQ_OP         110
+#define NE_OP         111
+
 #define POSITIVE		1
 #define NEGATIVE		-1
 #define NO_SIGN		0
@@ -136,7 +143,7 @@ const Cstring ERR_MSG[] = {
 %token      ST_EOF
 
 %type <ch> T_CHARCONST
-%type <num> N_IDX T_INTCONST N_ADDOP N_ADDOP_ARITH N_ADDOP_LOGICAL 
+%type <num> N_IDX T_INTCONST N_ADDOP N_ADDOP_ARITH N_ADDOP_LOGICAL N_RELOP
 %type <num> N_MULTOP_ARITH N_MULTOP_LOGICAL N_MULTOP N_SIGN N_INTCONST 
 %type <text> T_IDENT N_IDENT
 %type <typeInfo> N_ARRAY N_BOOLCONST N_CONST 
@@ -398,107 +405,125 @@ N_ENTIREVAR     : N_VARIDENT
                 ;
 N_EXPR          : N_SIMPLEEXPR
                   {
-              	  prRule("N_EXPR", "N_SIMPLEEXPR");
-			  $$.type = $1.type; 
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;
-               	  $$.startIndex = $1.startIndex;
-               	  $$.endIndex = $1.endIndex;
-		    	  $$.baseType = $1.baseType;
+					  prRule("N_EXPR", "N_SIMPLEEXPR");
+					  $$.type = $1.type; 
+					  $$.isVar = $1.isVar;
+					  $$.offset = $1.offset;
+					  $$.startIndex = $1.startIndex;
+					  $$.endIndex = $1.endIndex;
+					  $$.baseType = $1.baseType;
                   }
                 | N_SIMPLEEXPR N_RELOP N_SIMPLEEXPR
                   {
-              	  prRule("N_EXPR", 
-                         "N_SIMPLEEXPR N_RELOP N_SIMPLEEXPR");
-			  if ($1.type != $3.type) 
-			  {
-			    semanticError(
- 			       ERR_EXPRS_MUST_BOTH_BE_SAME_TYPE);
-			    return(0);
-			  }
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;
-			  $$.type = BOOL; 
-               	  $$.startIndex = NOT_APPLICABLE;
-              	  $$.endIndex = NOT_APPLICABLE;
-		    	  $$.baseType = NOT_APPLICABLE;
+					  if($2 == GT_OP)
+						  printf("\t.gt.\n");
+					  else if($2 == GE_OP)
+						  printf("\t.ge.\n");
+					  else if($2 == LT_OP)
+						  printf("\t.lt.\n");
+					  else if($2 == LE_OP)
+						  printf("\t.le.\n");
+					  else if($2 == EQ_OP)
+						  printf("\t.eq.\n");
+					  else if($2 == NE_OP)
+						  printf("\t.ne.\n");
+					  
+					  prRule("N_EXPR", 
+							 "N_SIMPLEEXPR N_RELOP N_SIMPLEEXPR");
+					  if ($1.type != $3.type) 
+					  {
+						semanticError(
+						   ERR_EXPRS_MUST_BOTH_BE_SAME_TYPE);
+						return(0);
+					  }
+					  $$.isVar = $1.isVar;
+					  $$.offset = $1.offset;
+					  $$.type = BOOL; 
+					  $$.startIndex = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                	  }
                 ;
 N_FACTOR        : N_SIGN N_VARIABLE
               	  {
 					  printf("\tderef\n");
-            	  prRule("N_FACTOR", "N_SIGN N_VARIABLE");
-			  if (($1 != NO_SIGN) && ($2.type != INT)) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_INT);
-			    return(0);
-			  }
-			  $$.isVar = $2.isVar;
-			  $$.offset = $2.offset;
-      		  $$.type = $2.type; 
+					  if($1 == NEGATIVE)
+						  printf("\tneg\n");
+					  prRule("N_FACTOR", "N_SIGN N_VARIABLE");
+					  if (($1 != NO_SIGN) && ($2.type != INT)) 
+					  {
+						semanticError(ERR_EXPR_MUST_BE_INT);
+						return(0);
+					  }
+					  $$.isVar = $2.isVar;
+					  $$.offset = $2.offset;
+					  $$.type = $2.type; 
                 	  $$.startIndex = $2.startIndex;
-              	  $$.endIndex = $2.endIndex;
-		   	  $$.baseType = $2.baseType;
+					  $$.endIndex = $2.endIndex;
+					  $$.baseType = $2.baseType;
                   }
                 | N_CONST
              	  {
-            	  prRule("N_FACTOR", "N_CONST");
-				  $$.offset = $1.offset;
-				  $$.isVar = $1.isVar;
-			  $$.type = $1.type; 
-             	  $$.startIndex = $1.startIndex;
-               	  $$.endIndex = $1.endIndex;
-		   	  $$.baseType = $1.baseType;
-           	  }
+					  prRule("N_FACTOR", "N_CONST");
+					  $$.offset = $1.offset;
+					  $$.isVar = $1.isVar;
+					  $$.type = $1.type; 
+					  $$.startIndex = $1.startIndex;
+					  $$.endIndex = $1.endIndex;
+					  $$.baseType = $1.baseType;
+				  }
                 | T_LPAREN N_EXPR T_RPAREN
             	  {
-             	  prRule("N_FACTOR", 
-              	         "T_LPAREN N_EXPR T_RPAREN");
-				  $$.offset = $2.offset;
-				  $$.isVar = $2.isVar;
-			  $$.type = $2.type; 
-             	  $$.startIndex = $2.startIndex;
-               	  $$.endIndex = $2.endIndex;
-		   	  $$.baseType = $2.baseType;
+					  prRule("N_FACTOR", 
+							 "T_LPAREN N_EXPR T_RPAREN");
+					  $$.offset = $2.offset;
+					  $$.isVar = $2.isVar;
+					  $$.type = $2.type; 
+					  $$.startIndex = $2.startIndex;
+					  $$.endIndex = $2.endIndex;
+					  $$.baseType = $2.baseType;
              	  }
                 | T_NOT N_FACTOR
             	  {
+					  //if($2.isVar)
+						 // printf("\tderef\n");
+					  printf("\tnot\n");
 					  $$.isVar = $2.isVar;
 					  $$.offset = $2.offset;
-            	  prRule("N_FACTOR", "T_NOT N_FACTOR");
-			  if ($2.type != BOOL) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
-			  $$.type = BOOL; 
+					  prRule("N_FACTOR", "T_NOT N_FACTOR");
+					  if ($2.type != BOOL) 
+					  {
+						semanticError(ERR_EXPR_MUST_BE_BOOL);
+						return(0);
+					  }
+					  $$.type = BOOL; 
                 	  $$.startIndex = NOT_APPLICABLE;
                 	  $$.endIndex = NOT_APPLICABLE;
-		    	  $$.baseType = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                	  }
                 ;
 N_IDENT         : T_IDENT
               	  {
-               	  prRule("N_IDENT", "T_IDENT");
-               	  $$ = $1;
+					  prRule("N_IDENT", "T_IDENT");
+					  $$ = $1;
               	  }
                 ;
 N_IDENTLST      : /* epsilon */
               	  {
-              	  prRule("N_IDENTLST", "epsilon");
+					  prRule("N_IDENTLST", "epsilon");
                	  }
                 | T_COMMA N_IDENT N_IDENTLST
                	  {
-               	  prRule("N_IDENTLST", 
+					  prRule("N_IDENTLST", 
                 	         "T_COMMA N_IDENT N_IDENTLST");
-			  string varName = string($2);
-			  variableNames.push_front(varName);
+					  string varName = string($2);
+					  variableNames.push_front(varName);
               	  }
                 ;
 N_IDX           : N_INTCONST
               	  {
-              	  prRule("N_IDX", "N_INTCONST");
-               	  $$ = $1;
+					  prRule("N_IDX", "N_INTCONST");
+					  $$ = $1;
                	  }
                 ;
 N_IDXRANGE      : N_IDX T_DOTDOT N_IDX
@@ -743,54 +768,60 @@ N_READ          : T_READ T_LPAREN N_INPUTVAR N_INPUTLST T_RPAREN
 			  }
                 ;
 N_RELOP         : T_LT
-                	  {
+                  {
+					  $$ = LT_OP;
                 	  prRule("N_RELOP", "T_LT");
-                	  }
+                  }
                 | T_GT
                	  {
+					  $$ = GT_OP;
                 	  prRule("N_RELOP", "T_GT");
-                	  }
+                  }
                 | T_LE
-                	  {
-                   prRule("N_RELOP", "T_LE");
+                  {
+					  $$ = LE_OP;
+					  prRule("N_RELOP", "T_LE");
                	  }
                 | T_GE
                	  {
-               	  prRule("N_RELOP", "T_GE");
-                	  }
+					  $$ = GE_OP;
+               	      prRule("N_RELOP", "T_GE");
+                  }
                 | T_EQ
                	  {
+					  $$ = EQ_OP;
                 	  prRule("N_RELOP", "T_EQ");
-                	  }
+                  }
                 | T_NE
-                	  {
+                  {
+					  $$ = NE_OP;
                 	  prRule("N_RELOP", "T_NE");
                	  }
                 ;
 N_SIGN          : /* epsilon */
               	  {
-               	  prRule("N_SIGN", "epsilon");
-			  $$ = NO_SIGN;
+               	    prRule("N_SIGN", "epsilon");
+					$$ = NO_SIGN;
                	  }
                 | T_PLUS
                	  {
-               	  prRule("N_SIGN", "T_PLUS");
-			  $$ = POSITIVE;
+					prRule("N_SIGN", "T_PLUS");
+					$$ = POSITIVE;
                	  }
                 | T_MINUS
               	  {
-               	  prRule("N_SIGN", "T_MINUS");
-			  $$ = NEGATIVE;
+					prRule("N_SIGN", "T_MINUS");
+					$$ = NEGATIVE;
                	  }
                 ;
 N_SIMPLE        : T_INT
                	  {
-               	  prRule("N_SIMPLE", "T_INT");
-			  $$.type = INT; 
-                	  $$.startIndex = NOT_APPLICABLE;
-                	  $$.endIndex = NOT_APPLICABLE;
-		     	  $$.baseType = NOT_APPLICABLE;
-                	  }
+					prRule("N_SIMPLE", "T_INT");
+					$$.type = INT; 
+                	$$.startIndex = NOT_APPLICABLE;
+                	$$.endIndex = NOT_APPLICABLE;
+		     	    $$.baseType = NOT_APPLICABLE;
+                  }
                 | T_CHAR
                 	  {
                 	  prRule("N_SIMPLE", "T_CHAR");
