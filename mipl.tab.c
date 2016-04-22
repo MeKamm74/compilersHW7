@@ -589,11 +589,11 @@ static const yytype_uint16 yyrline[] =
      358,   369,   380,   391,   403,   414,   424,   455,   473,   483,
      494,   513,   520,   523,   531,   537,   546,   564,   567,   573,
      588,   596,   601,   607,   613,   618,   625,   628,   655,   676,
-     679,   685,   692,   716,   719,   726,   743,   754,   753,   772,
-     778,   784,   789,   794,   799,   804,   809,   816,   820,   825,
-     831,   839,   847,   856,   868,   872,   876,   880,   884,   888,
-     892,   898,   901,   907,   912,   924,   932,   941,   992,   995,
-    1002,  1005,  1011,  1024,  1039,  1065,  1064,  1077
+     679,   685,   692,   716,   719,   726,   744,   756,   755,   774,
+     780,   786,   791,   796,   801,   806,   811,   818,   822,   827,
+     833,   841,   849,   858,   870,   874,   878,   882,   886,   890,
+     894,   900,   903,   909,   914,   926,   934,   943,   994,   997,
+    1004,  1007,  1013,  1026,  1041,  1067,  1066,  1079
 };
 #endif
 
@@ -2221,17 +2221,19 @@ yyreduce:
                 	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
                 	    return(0);
 					}
+					(yyval.typeInfo).offset = typeInfo.offset;
 				    (yyval.typeInfo).type = typeInfo.type;
 				    (yyval.typeInfo).startIndex = typeInfo.startIndex;
 				    (yyval.typeInfo).endIndex = typeInfo.endIndex;
 				    (yyval.typeInfo).baseType = typeInfo.baseType;
                	  }
-#line 2230 "mipl.tab.c" /* yacc.c:1646  */
+#line 2231 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 744 "mipl.y" /* yacc.c:1646  */
+#line 745 "mipl.y" /* yacc.c:1646  */
     {
+					  printf("\tjs L.%d\n", (yyvsp[0].typeInfo).offset);
 					  prRule("N_PROCSTMT", "N_PROCIDENT");
 					  if ((yyvsp[0].typeInfo).type != PROCEDURE) 
 					  {
@@ -2239,11 +2241,11 @@ yyreduce:
 						return(0);
 					  }
               	  }
-#line 2243 "mipl.tab.c" /* yacc.c:1646  */
+#line 2245 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 754 "mipl.y" /* yacc.c:1646  */
+#line 756 "mipl.y" /* yacc.c:1646  */
     {
 					  //Initial program lines, same every time
 					  printf("init L.0, 20, L.1, L.2, L.3\nL.0:\n\t");
@@ -2259,116 +2261,116 @@ yyreduce:
                	  bool success = scopeStack.top().addEntry
                                (SYMBOL_TABLE_ENTRY(lexeme, info));
 			  }
-#line 2263 "mipl.tab.c" /* yacc.c:1646  */
+#line 2265 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 770 "mipl.y" /* yacc.c:1646  */
+#line 772 "mipl.y" /* yacc.c:1646  */
     { }
-#line 2269 "mipl.tab.c" /* yacc.c:1646  */
+#line 2271 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 773 "mipl.y" /* yacc.c:1646  */
+#line 775 "mipl.y" /* yacc.c:1646  */
     {
             	  prRule("N_PROGLBL", "T_PROG");
 			  beginScope();
                	  }
-#line 2278 "mipl.tab.c" /* yacc.c:1646  */
+#line 2280 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 779 "mipl.y" /* yacc.c:1646  */
+#line 781 "mipl.y" /* yacc.c:1646  */
     {
                	  prRule("N_READ",
                "T_READ T_LPAREN N_INPUTVAR N_INPUTLST T_RPAREN");
 			  }
-#line 2287 "mipl.tab.c" /* yacc.c:1646  */
+#line 2289 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 785 "mipl.y" /* yacc.c:1646  */
+#line 787 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = LT_OP;
                 	  prRule("N_RELOP", "T_LT");
                   }
-#line 2296 "mipl.tab.c" /* yacc.c:1646  */
+#line 2298 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 790 "mipl.y" /* yacc.c:1646  */
+#line 792 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = GT_OP;
                 	  prRule("N_RELOP", "T_GT");
                   }
-#line 2305 "mipl.tab.c" /* yacc.c:1646  */
+#line 2307 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 795 "mipl.y" /* yacc.c:1646  */
+#line 797 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = LE_OP;
 					  prRule("N_RELOP", "T_LE");
                	  }
-#line 2314 "mipl.tab.c" /* yacc.c:1646  */
+#line 2316 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 800 "mipl.y" /* yacc.c:1646  */
+#line 802 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = GE_OP;
                	      prRule("N_RELOP", "T_GE");
                   }
-#line 2323 "mipl.tab.c" /* yacc.c:1646  */
+#line 2325 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 805 "mipl.y" /* yacc.c:1646  */
+#line 807 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = EQ_OP;
                 	  prRule("N_RELOP", "T_EQ");
                   }
-#line 2332 "mipl.tab.c" /* yacc.c:1646  */
+#line 2334 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 810 "mipl.y" /* yacc.c:1646  */
+#line 812 "mipl.y" /* yacc.c:1646  */
     {
 					  (yyval.num) = NE_OP;
                 	  prRule("N_RELOP", "T_NE");
                	  }
-#line 2341 "mipl.tab.c" /* yacc.c:1646  */
+#line 2343 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 816 "mipl.y" /* yacc.c:1646  */
+#line 818 "mipl.y" /* yacc.c:1646  */
     {
                	    prRule("N_SIGN", "epsilon");
 					(yyval.num) = NO_SIGN;
                	  }
-#line 2350 "mipl.tab.c" /* yacc.c:1646  */
+#line 2352 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 821 "mipl.y" /* yacc.c:1646  */
+#line 823 "mipl.y" /* yacc.c:1646  */
     {
 					prRule("N_SIGN", "T_PLUS");
 					(yyval.num) = POSITIVE;
                	  }
-#line 2359 "mipl.tab.c" /* yacc.c:1646  */
+#line 2361 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 826 "mipl.y" /* yacc.c:1646  */
+#line 828 "mipl.y" /* yacc.c:1646  */
     {
 					prRule("N_SIGN", "T_MINUS");
 					(yyval.num) = NEGATIVE;
                	  }
-#line 2368 "mipl.tab.c" /* yacc.c:1646  */
+#line 2370 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 832 "mipl.y" /* yacc.c:1646  */
+#line 834 "mipl.y" /* yacc.c:1646  */
     {
 					prRule("N_SIMPLE", "T_INT");
 					(yyval.typeInfo).type = INT; 
@@ -2376,11 +2378,11 @@ yyreduce:
                 	(yyval.typeInfo).endIndex = NOT_APPLICABLE;
 		     	    (yyval.typeInfo).baseType = NOT_APPLICABLE;
                   }
-#line 2380 "mipl.tab.c" /* yacc.c:1646  */
+#line 2382 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 840 "mipl.y" /* yacc.c:1646  */
+#line 842 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_SIMPLE", "T_CHAR");
 			  (yyval.typeInfo).type = CHAR; 
@@ -2388,11 +2390,11 @@ yyreduce:
                 	  (yyval.typeInfo).endIndex = NOT_APPLICABLE;
 		     	  (yyval.typeInfo).baseType = NOT_APPLICABLE;
                 	  }
-#line 2392 "mipl.tab.c" /* yacc.c:1646  */
+#line 2394 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 848 "mipl.y" /* yacc.c:1646  */
+#line 850 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_SIMPLE", "T_BOOL");
 			  (yyval.typeInfo).type = BOOL; 
@@ -2400,11 +2402,11 @@ yyreduce:
                 	  (yyval.typeInfo).endIndex = NOT_APPLICABLE;
 		    	  (yyval.typeInfo).baseType = NOT_APPLICABLE;
                 	  }
-#line 2404 "mipl.tab.c" /* yacc.c:1646  */
+#line 2406 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 857 "mipl.y" /* yacc.c:1646  */
+#line 859 "mipl.y" /* yacc.c:1646  */
     {  
 						  prRule("N_SIMPLEEXPR", 
 							 "N_TERM N_ADDOPLST");
@@ -2415,92 +2417,92 @@ yyreduce:
 						  (yyval.typeInfo).endIndex = (yyvsp[-1].typeInfo).endIndex;
 						  (yyval.typeInfo).baseType = (yyvsp[-1].typeInfo).baseType;
                 	  }
-#line 2419 "mipl.tab.c" /* yacc.c:1646  */
+#line 2421 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 869 "mipl.y" /* yacc.c:1646  */
+#line 871 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_ASSIGN");
                	  }
-#line 2427 "mipl.tab.c" /* yacc.c:1646  */
+#line 2429 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 873 "mipl.y" /* yacc.c:1646  */
+#line 875 "mipl.y" /* yacc.c:1646  */
     {
                	  prRule("N_STMT", "N_PROCSTMT");
                 	  }
-#line 2435 "mipl.tab.c" /* yacc.c:1646  */
+#line 2437 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 877 "mipl.y" /* yacc.c:1646  */
+#line 879 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_READ");
                 	  }
-#line 2443 "mipl.tab.c" /* yacc.c:1646  */
+#line 2445 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 881 "mipl.y" /* yacc.c:1646  */
+#line 883 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_WRITE");
                 	  }
-#line 2451 "mipl.tab.c" /* yacc.c:1646  */
+#line 2453 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 885 "mipl.y" /* yacc.c:1646  */
+#line 887 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_CONDITION");
                 	  }
-#line 2459 "mipl.tab.c" /* yacc.c:1646  */
+#line 2461 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 889 "mipl.y" /* yacc.c:1646  */
+#line 891 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_WHILE");
                 	  }
-#line 2467 "mipl.tab.c" /* yacc.c:1646  */
+#line 2469 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 893 "mipl.y" /* yacc.c:1646  */
+#line 895 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMT", "N_COMPOUND");
                 	  }
-#line 2475 "mipl.tab.c" /* yacc.c:1646  */
+#line 2477 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 898 "mipl.y" /* yacc.c:1646  */
+#line 900 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_STMTLST", "epsilon");
                 	  }
-#line 2483 "mipl.tab.c" /* yacc.c:1646  */
+#line 2485 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 902 "mipl.y" /* yacc.c:1646  */
+#line 904 "mipl.y" /* yacc.c:1646  */
     {
                    prRule("N_STMTLST", 
 			          "T_SCOLON N_STMT N_STMTLST");
                	  }
-#line 2492 "mipl.tab.c" /* yacc.c:1646  */
+#line 2494 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 908 "mipl.y" /* yacc.c:1646  */
+#line 910 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_STMTPART", "N_COMPOUND");
                	  }
-#line 2500 "mipl.tab.c" /* yacc.c:1646  */
+#line 2502 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 913 "mipl.y" /* yacc.c:1646  */
+#line 915 "mipl.y" /* yacc.c:1646  */
     {
 					  
 					  prRule("N_TERM", "N_FACTOR N_MULTOPLST");
@@ -2511,11 +2513,11 @@ yyreduce:
                 	  (yyval.typeInfo).endIndex = (yyvsp[-1].typeInfo).endIndex;
 		     	      (yyval.typeInfo).baseType = (yyvsp[-1].typeInfo).baseType;
                	  }
-#line 2515 "mipl.tab.c" /* yacc.c:1646  */
+#line 2517 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 925 "mipl.y" /* yacc.c:1646  */
+#line 927 "mipl.y" /* yacc.c:1646  */
     {
                	  prRule("N_TYPE", "N_SIMPLE");
 			  (yyval.typeInfo).type = (yyvsp[0].typeInfo).type; 
@@ -2523,11 +2525,11 @@ yyreduce:
                	  (yyval.typeInfo).endIndex = (yyvsp[0].typeInfo).endIndex;
 		    	  (yyval.typeInfo).baseType = (yyvsp[0].typeInfo).baseType;
               	  }
-#line 2527 "mipl.tab.c" /* yacc.c:1646  */
+#line 2529 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 86:
-#line 933 "mipl.y" /* yacc.c:1646  */
+#line 935 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_TYPE", "N_ARRAY");
 			  (yyval.typeInfo).type = (yyvsp[0].typeInfo).type; 
@@ -2535,11 +2537,11 @@ yyreduce:
                	  (yyval.typeInfo).endIndex = (yyvsp[0].typeInfo).endIndex;
 		     	  (yyval.typeInfo).baseType = (yyvsp[0].typeInfo).baseType;
                 	  }
-#line 2539 "mipl.tab.c" /* yacc.c:1646  */
+#line 2541 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 87:
-#line 942 "mipl.y" /* yacc.c:1646  */
+#line 944 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_VARDEC", 
              	         "N_IDENT N_IDENTLST T_COLON N_TYPE");
@@ -2588,45 +2590,45 @@ yyreduce:
 			  }
                 	  variableNames.clear();
               	  }
-#line 2592 "mipl.tab.c" /* yacc.c:1646  */
+#line 2594 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 88:
-#line 992 "mipl.y" /* yacc.c:1646  */
+#line 994 "mipl.y" /* yacc.c:1646  */
     {
              	  prRule("N_VARDECLST", "epsilon");
              	  }
-#line 2600 "mipl.tab.c" /* yacc.c:1646  */
+#line 2602 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 89:
-#line 996 "mipl.y" /* yacc.c:1646  */
+#line 998 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_VARDECLST", 
               	         "N_VARDEC T_SCOLON N_VARDECLST");
             	  }
-#line 2609 "mipl.tab.c" /* yacc.c:1646  */
+#line 2611 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 90:
-#line 1002 "mipl.y" /* yacc.c:1646  */
+#line 1004 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_VARDECPART", "epsilon");
                	  }
-#line 2617 "mipl.tab.c" /* yacc.c:1646  */
+#line 2619 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 91:
-#line 1006 "mipl.y" /* yacc.c:1646  */
+#line 1008 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_VARDECPART",
                         "T_VAR N_VARDEC T_SCOLON N_VARDECLST");
                	  }
-#line 2626 "mipl.tab.c" /* yacc.c:1646  */
+#line 2628 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 92:
-#line 1012 "mipl.y" /* yacc.c:1646  */
+#line 1014 "mipl.y" /* yacc.c:1646  */
     {
 					int offset = (yyvsp[0].typeInfo).offset;
 					printf("\tla %d, %d\n", offset, 0);
@@ -2639,11 +2641,11 @@ yyreduce:
 				    (yyval.typeInfo).endIndex = (yyvsp[0].typeInfo).endIndex;
 				    (yyval.typeInfo).baseType = (yyvsp[0].typeInfo).baseType;
                	  }
-#line 2643 "mipl.tab.c" /* yacc.c:1646  */
+#line 2645 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 1025 "mipl.y" /* yacc.c:1646  */
+#line 1027 "mipl.y" /* yacc.c:1646  */
     {
 					int offset = (yyvsp[0].typeInfo).offset;
 					printf("\tla %d, %d\n", offset, 0);
@@ -2657,11 +2659,11 @@ yyreduce:
 				    (yyval.typeInfo).endIndex = (yyvsp[0].typeInfo).endIndex;
 				    (yyval.typeInfo).baseType = (yyvsp[0].typeInfo).baseType;
                	  }
-#line 2661 "mipl.tab.c" /* yacc.c:1646  */
+#line 2663 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 1040 "mipl.y" /* yacc.c:1646  */
+#line 1042 "mipl.y" /* yacc.c:1646  */
     {
               	  prRule("N_VARIDENT", "T_IDENT");
 			  string ident = string((yyvsp[0].text));
@@ -2685,11 +2687,11 @@ yyreduce:
 			  (yyval.typeInfo).endIndex = typeInfo.endIndex;
 			  (yyval.typeInfo).baseType = typeInfo.baseType;
 			  }
-#line 2689 "mipl.tab.c" /* yacc.c:1646  */
+#line 2691 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 1065 "mipl.y" /* yacc.c:1646  */
+#line 1067 "mipl.y" /* yacc.c:1646  */
     {
                	  prRule("N_WHILE", 
                 	         "T_WHILE N_EXPR T_DO N_STMT");
@@ -2699,26 +2701,26 @@ yyreduce:
 			    return(0);
 			  }
                	  }
-#line 2703 "mipl.tab.c" /* yacc.c:1646  */
+#line 2705 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 1075 "mipl.y" /* yacc.c:1646  */
+#line 1077 "mipl.y" /* yacc.c:1646  */
     { }
-#line 2709 "mipl.tab.c" /* yacc.c:1646  */
+#line 2711 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 1078 "mipl.y" /* yacc.c:1646  */
+#line 1080 "mipl.y" /* yacc.c:1646  */
     {
                 	  prRule("N_WRITE",
                "T_WRITE T_LPAREN N_OUTPUT N_OUTPUTLST T_RPAREN");
                	  }
-#line 2718 "mipl.tab.c" /* yacc.c:1646  */
+#line 2720 "mipl.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2722 "mipl.tab.c" /* yacc.c:1646  */
+#line 2724 "mipl.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2946,7 +2948,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1083 "mipl.y" /* yacc.c:1906  */
+#line 1085 "mipl.y" /* yacc.c:1906  */
 
 
 #include    "lex.yy.c"

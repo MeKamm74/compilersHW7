@@ -1,19 +1,14 @@
 init L.0, 20, L.1, L.2, L.3
 L.0:
-	bss 21
+	bss 20
 L.2:
 L.4:
 	lc 1
 	iwrite
 	ji
 L.3:
-	la 20, 0
-	lc 92
-	st
-	la 20, 0
-	deref
-	cwrite
-	lc 5
+	js L.4
+	lc 0
 	iwrite
 	halt
 L.1:

@@ -734,6 +734,7 @@ N_PROCIDENT     : T_IDENT
                 	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
                 	    return(0);
 					}
+					$$.offset = typeInfo.offset;
 				    $$.type = typeInfo.type;
 				    $$.startIndex = typeInfo.startIndex;
 				    $$.endIndex = typeInfo.endIndex;
@@ -742,6 +743,7 @@ N_PROCIDENT     : T_IDENT
                 ;
 N_PROCSTMT      : N_PROCIDENT
                	  {
+					  printf("\tjs L.%d\n", $1.offset);
 					  prRule("N_PROCSTMT", "N_PROCIDENT");
 					  if ($1.type != PROCEDURE) 
 					  {
