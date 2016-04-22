@@ -572,17 +572,24 @@ N_INPUTLST      : /* epsilon */
                 ;
 N_INPUTVAR      : N_VARIABLE
               	  {
-             	  prRule("N_INPUTVAR", "N_VARIABLE");
-			  if (($1.type != INT) && ($1.type != CHAR)) 
-			  {
-             	    semanticError(
-			      ERR_INPUT_VAR_MUST_BE_INT_OR_CHAR);
-              	    return(0);
+					  if($1.type == INT)
+						printf("\tiread\n");
+					  else
+						printf("\tcread\n");
+					
+					  printf("\tst\n");
+					  
+					  prRule("N_INPUTVAR", "N_VARIABLE");
+					  if (($1.type != INT) && ($1.type != CHAR)) 
+					  {
+						semanticError(
+						ERR_INPUT_VAR_MUST_BE_INT_OR_CHAR);
+						return(0);
                 	  }
-		   	  $$.type = $1.type; 
+					  $$.type = $1.type; 
                 	  $$.startIndex = $1.startIndex;
                 	  $$.endIndex = $1.endIndex;
-		     	  $$.baseType = $1.baseType;
+					  $$.baseType = $1.baseType;
              	  }
                 ;
 N_INTCONST      : N_SIGN T_INTCONST
