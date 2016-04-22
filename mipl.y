@@ -30,7 +30,11 @@ void beginScope();
 void endScope();
 void cleanUp();
 TYPE_INFO findEntryInAnyScope(const string theName);
+
 int findOffsetInAnyScope(const string theName);
+
+
+
 int yyerror(const char*);
 
 extern "C" {
@@ -53,9 +57,11 @@ extern "C" {
 #define NO_SIGN		0
 
 int lineNum = 1;                   // source line number
+
 int count = 20;
 int countLabel = 4;
 bool firstTime = true;
+
 
 stack<SYMBOL_TABLE> scopeStack;    // stack of scope hashtables
 list<string> variableNames;		  // list of declared variables

@@ -34,6 +34,7 @@ private:
   // Member variables
   string name;
   TYPE_INFO typeInfo;  
+
 public:
   // Constructors
   SYMBOL_TABLE_ENTRY( ) { 

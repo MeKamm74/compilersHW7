@@ -40,6 +40,7 @@ public:
       return(info);
     else return(itr->second.getTypeInfo());
   }
+
   
   int findOffset(string theName) 
   {
