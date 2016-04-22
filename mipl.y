@@ -238,12 +238,12 @@ N_ADDOPLST      : /* epsilon */
 N_ARRAY         : T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF
 			  N_SIMPLE
                   {
-                  prRule("N_ARRAY",
-                	         "T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF N_SIMPLE");
-			  $$.type = ARRAY; 
-                	  $$.startIndex = $3.startIndex;
-               	  $$.endIndex = $3.endIndex;
-		     	  $$.baseType = $6.type;
+					prRule("N_ARRAY",
+                	       "T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF N_SIMPLE");
+					$$.type = ARRAY; 
+                	$$.startIndex = $3.startIndex;
+					$$.endIndex = $3.endIndex;
+					$$.baseType = $6.type;
                   }
                 ;
 N_ARRAYVAR      : N_ENTIREVAR
@@ -254,12 +254,12 @@ N_ARRAYVAR      : N_ENTIREVAR
 					  $$.type = $1.type; 
                 	  $$.startIndex = $1.startIndex;
                 	  $$.endIndex = $1.endIndex;
-		    	  $$.baseType = $1.baseType;
-			  if ($1.type != ARRAY) 
-			  {
-               	    semanticError(ERR_INDEX_VAR_MUST_BE_ARRAY);
-             	    return(0);
-              	  }
+					  $$.baseType = $1.baseType;
+					  if ($1.type != ARRAY) 
+					  {
+						semanticError(ERR_INDEX_VAR_MUST_BE_ARRAY);
+						return(0);
+					  }
                   }
                 ;
 N_ASSIGN        : N_VARIABLE T_ASSIGN N_EXPR
@@ -269,27 +269,26 @@ N_ASSIGN        : N_VARIABLE T_ASSIGN N_EXPR
 					  // load them both
 					  // st
 					  
-					  int val = $1.offset;
 					  //if($3.isVar)
 						  //printf("\tderef\n");
 					  printf("\tst\n");
 					  			  			  
                 	  prRule("N_ASSIGN", 
                          "N_VARIABLE T_ASSIGN N_EXPR");
-			 if ($1.type == ARRAY) 
-			  {
+					 if ($1.type == ARRAY) 
+					  {
                 	    semanticError(ERR_CANNOT_ASSIGN_TO_ARRAY);
-              	    return(0);
+						return(0);
                 	  }
-			  if ($1.type == PROCEDURE) 
-			  {
-			      semanticError(ERR_PROCEDURE_VAR_MISMATCH);
-                      return(0);
-			  }
-			  if ($3.type != $1.type) 
-			  {
-              	    semanticError(ERR_EXPR_MUST_BE_SAME_AS_VAR);
-               	    return(0);
+					  if ($1.type == PROCEDURE) 
+					  {
+						  semanticError(ERR_PROCEDURE_VAR_MISMATCH);
+						  return(0);
+					  }
+					  if ($3.type != $1.type) 
+					  {
+					      semanticError(ERR_EXPR_MUST_BE_SAME_AS_VAR);
+						  return(0);
                 	  } 
              	  }
                 ;
@@ -537,19 +536,19 @@ N_IDXRANGE      : N_IDX T_DOTDOT N_IDX
                 ;
 N_IDXVAR        : N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK
                	  {
-               	  prRule("N_IDXVAR", 
-              	         "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
-	    		  if ($3.type != INT) 
-			  {
-          		    semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
-               	    return(0);
-              	  }
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;	  
-			  $$.type = $1.baseType; 
-			  $$.startIndex = NOT_APPLICABLE;
-			  $$.endIndex = NOT_APPLICABLE;
-			  $$.baseType = NOT_APPLICABLE;
+					  prRule("N_IDXVAR", 
+							 "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
+					  if ($3.type != INT) 
+					  {
+						semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
+						return(0);
+					  }
+					  $$.isVar = $1.isVar;
+					  $$.offset = $1.offset - $1.startIndex - 1;	  
+					  $$.type = $1.baseType; 
+					  $$.startIndex = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
               	  }
                 ;
 N_INPUTLST      : /* epsilon */
@@ -999,25 +998,27 @@ N_VARIABLE      : N_ENTIREVAR
 					int offset = $1.offset;
 					printf("\tla %d, %d\n", offset, 0);
 					  
-               	  prRule("N_VARIABLE", "N_ENTIREVAR");
-			  $$.offset = $1.offset;
-			  $$.isVar = $1.isVar;
-			  $$.type = $1.type;
-			  $$.startIndex = $1.startIndex;
-			  $$.endIndex = $1.endIndex;
-			  $$.baseType = $1.baseType;
+               	    prRule("N_VARIABLE", "N_ENTIREVAR");
+				    $$.offset = $1.offset;
+				    $$.isVar = $1.isVar;
+				    $$.type = $1.type;
+				    $$.startIndex = $1.startIndex;
+				    $$.endIndex = $1.endIndex;
+				    $$.baseType = $1.baseType;
                	  }
                 | N_IDXVAR
               	  {
 					int offset = $1.offset;
 					printf("\tla %d, %d\n", offset, 0);
+					printf("\tadd\n");
+					
               	    prRule("N_VARIABLE", "N_IDXVAR");
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;
-			  $$.type = $1.type;
-			  $$.startIndex = $1.startIndex;
-			  $$.endIndex = $1.endIndex;
-			  $$.baseType = $1.baseType;
+				    $$.isVar = $1.isVar;
+				    $$.offset = $1.offset;
+				    $$.type = $1.type;
+				    $$.startIndex = $1.startIndex;
+				    $$.endIndex = $1.endIndex;
+				    $$.baseType = $1.baseType;
                	  }
                 ;
 N_VARIDENT      : T_IDENT
