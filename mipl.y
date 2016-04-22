@@ -72,8 +72,9 @@ extern "C" {
 
 int lineNum = 1;                   // source line number
 
+int level = 0;
 int count = 20;
-int countLabel = 4;
+int countLabel = 3;
 bool firstTime = true;
 
 
@@ -145,6 +146,7 @@ const Cstring ERR_MSG[] = {
 %type <ch> T_CHARCONST
 %type <num> N_IDX T_INTCONST N_ADDOP N_ADDOP_ARITH N_ADDOP_LOGICAL N_RELOP
 %type <num> N_MULTOP_ARITH N_MULTOP_LOGICAL N_MULTOP N_SIGN N_INTCONST 
+%type <num> N_PROCDEC N_PROCHDR N_PROCDECPART
 %type <text> T_IDENT N_IDENT
 %type <typeInfo> N_ARRAY N_BOOLCONST N_CONST 
 %type <typeInfo> N_ENTIREVAR N_ARRAYVAR
@@ -298,12 +300,19 @@ N_BLOCK         : N_VARDECPART {
 						printf("bss %d\nL.2:\n", count);
 						firstTime = false;
 				    }
+					level++;
 				  }N_PROCDECPART {
 					//PRINT PROCEDURE OAL CODE, ELSEWHERE
-				    printf("L.3:\n");
+				    level--;
+					if(level == 0) {			
+						printf("L.3:\n");
+				    } 
 				  }	
 				  N_STMTPART
                   {
+					  if(level != 0) {
+						printf("\tji\n");
+					  }
                 	  prRule("N_BLOCK", 
                          "N_VARDECPART N_PROCDECPART N_STMTPART");
                 	  endScope();
@@ -311,23 +320,23 @@ N_BLOCK         : N_VARDECPART {
                 ;
 N_BOOLCONST     : T_TRUE
                	  {
-              	  prRule("N_BOOLCONST", "T_TRUE");
-				  $$.offset = 1;
-				  $$.isVar = false;
-			  $$.type = BOOL; 
-                	  $$.startIndex = NOT_APPLICABLE;
-			  $$.endIndex = NOT_APPLICABLE;
-		   	  $$.baseType = NOT_APPLICABLE;
-                	  }
+					  prRule("N_BOOLCONST", "T_TRUE");
+					  $$.offset = 1;
+					  $$.isVar = false;
+					  $$.type = BOOL; 
+					  $$.startIndex = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
+                  }
                 | T_FALSE
                   {
 					  $$.offset = 0;
-				  $$.isVar = false;
-              	  prRule("N_BOOLCONST", "T_FALSE");
-			  $$.type = BOOL; 
+					  $$.isVar = false;
+					  prRule("N_BOOLCONST", "T_FALSE");
+					  $$.type = BOOL; 
                 	  $$.startIndex = NOT_APPLICABLE;
                 	  $$.endIndex = NOT_APPLICABLE;
-		        $$.baseType = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                   }
                 ;
 N_COMPOUND      : T_BEGIN N_STMT N_STMTLST T_END
@@ -675,65 +684,70 @@ N_OUTPUTLST     : /* epsilon */
                 ;
 N_PROCDEC       : N_PROCHDR N_BLOCK
              	  {
-              	  prRule("N_PROCDEC", "N_PROCHDR N_BLOCK");
+					  //$$ = $1;
+					  
+					  prRule("N_PROCDEC", "N_PROCHDR N_BLOCK");
              	  }
                 ;
 N_PROCHDR       : T_PROC T_IDENT T_SCOLON
              	  {
+					  //$$ = countLabel;
+					  printf("L.%d:\n", countLabel);
                 	  prRule("N_PROCHDR",
 			         "T_PROC T_IDENT T_SCOLON");
-			  string lexeme = string($2);
-			  TYPE_INFO info = {PROCEDURE, NOT_APPLICABLE,
+					  string lexeme = string($2);
+					  TYPE_INFO info = {PROCEDURE, NOT_APPLICABLE,
 		                          NOT_APPLICABLE,
 		                          NOT_APPLICABLE, countLabel, true};
-			  prSymbolTableAddition(lexeme, info);
-            	  bool success = scopeStack.top().addEntry
+					  prSymbolTableAddition(lexeme, info);
+					  bool success = scopeStack.top().addEntry
          	                    (SYMBOL_TABLE_ENTRY(lexeme, info));
-				  countLabel++;
-             	  if (! success) 
-			  {
-            	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
-               	    return(0);
-               	  }
+					  countLabel++;
+					  if (! success) 
+					  {
+						semanticError(ERR_MULTIPLY_DEFINED_IDENT);
+						return(0);
+					  }
 
-			  beginScope();
+					  beginScope();
                   }
                 ;
 N_PROCDECPART   : /* epsilon */
              	  {
-               	  prRule("N_PROCDECPART", "epsilon");
+					prRule("N_PROCDECPART", "epsilon");
                	  }
-                | N_PROCDEC T_SCOLON N_PROCDECPART
+                  | N_PROCDEC T_SCOLON N_PROCDECPART
                	  {
-               	  prRule("N_PROCDECPART",
-               	         "N_PROCDEC T_SCOLON N_PROCDECPART");
+					
+					prRule("N_PROCDECPART",
+               	           "N_PROCDEC T_SCOLON N_PROCDECPART");
               	  }
                 ;
 N_PROCIDENT     : T_IDENT
               	  {
-              	  prRule("N_PROCIDENT", "T_IDENT");
-			  string ident = string($1);
-                	  TYPE_INFO typeInfo = 
-			              findEntryInAnyScope(ident);
-               	  if (typeInfo.type == UNDEFINED) 
-			  {
+					prRule("N_PROCIDENT", "T_IDENT");
+					string ident = string($1);
+                	TYPE_INFO typeInfo = 
+			        findEntryInAnyScope(ident);
+					if (typeInfo.type == UNDEFINED) 
+					{
                 	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
                 	    return(0);
-               	  }
-			  $$.type = typeInfo.type;
-			  $$.startIndex = typeInfo.startIndex;
-			  $$.endIndex = typeInfo.endIndex;
-			  $$.baseType = typeInfo.baseType;
+					}
+				    $$.type = typeInfo.type;
+				    $$.startIndex = typeInfo.startIndex;
+				    $$.endIndex = typeInfo.endIndex;
+				    $$.baseType = typeInfo.baseType;
                	  }
                 ;
 N_PROCSTMT      : N_PROCIDENT
                	  {
-               	  prRule("N_PROCSTMT", "N_PROCIDENT");
-			  if ($1.type != PROCEDURE) 
-			  {
-			    semanticError(ERR_PROCEDURE_VAR_MISMATCH);
-			    return(0);
-			  }
+					  prRule("N_PROCSTMT", "N_PROCIDENT");
+					  if ($1.type != PROCEDURE) 
+					  {
+						semanticError(ERR_PROCEDURE_VAR_MISMATCH);
+						return(0);
+					  }
               	  }
                 ;
 N_PROG          : N_PROGLBL T_IDENT T_SCOLON 
@@ -746,7 +760,8 @@ N_PROG          : N_PROGLBL T_IDENT T_SCOLON
 			  string lexeme = string($2);
 			  TYPE_INFO info = {PROGRAM, NOT_APPLICABLE,
 			                    NOT_APPLICABLE,
-			                    NOT_APPLICABLE, NOT_APPLICABLE, true};
+			                    NOT_APPLICABLE, countLabel, true};
+					  countLabel++;
 			  prSymbolTableAddition(lexeme, info);
                	  bool success = scopeStack.top().addEntry
                                (SYMBOL_TABLE_ENTRY(lexeme, info));
