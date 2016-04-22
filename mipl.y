@@ -77,6 +77,7 @@ int count = 20;
 int countLabel = 3;
 bool firstTime = true;
 
+stack<int> ifElseLabels;
 
 stack<SYMBOL_TABLE> scopeStack;    // stack of scope hashtables
 list<string> variableNames;		  // list of declared variables
@@ -341,29 +342,67 @@ N_BOOLCONST     : T_TRUE
                 ;
 N_COMPOUND      : T_BEGIN N_STMT N_STMTLST T_END
                   {
-                  prRule("N_COMPOUND", 
-                         "T_BEGIN N_STMT N_STMTLST T_END");
+					prRule("N_COMPOUND", 
+					       "T_BEGIN N_STMT N_STMTLST T_END");
                   }
                 ;
-N_CONDITION     : T_IF N_EXPR T_THEN N_STMT
-                  {
-                  prRule("N_CONDITION", 
-                         "T_IF N_EXPR T_THEN N_STMT");
-			  if ($2.type != BOOL) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
-                  }
-                | T_IF N_EXPR T_THEN N_STMT T_ELSE N_STMT
-                  {
-                  prRule("N_CONDITION",
+N_CONDITION     : T_IF N_EXPR{
+					//Make two new labels
+					//Run Jump False to first label
+					printf("\tjf L.%d\n", countLabel);
+					ifElseLabels.push(countLabel);
+					countLabel++;
+					
+				  if ($2.type != BOOL) 
+				  {
+					semanticError(ERR_EXPR_MUST_BE_BOOL);
+					return(0);
+				  }	
+				} T_THEN N_STMT T_ELSE {
+					//Run STMT
+					//Run Jump to second label
+					printf("\tjp L.%d\n", countLabel);
+					printf("L.%d:\n", ifElseLabels.top());
+					
+					ifElseLabels.pop();
+					
+					ifElseLabels.push(countLabel);
+					countLabel++;
+					
+				} N_STMT {
+					printf("L.%d:\n", ifElseLabels.top());
+					ifElseLabels.pop();
+                    prRule("N_CONDITION",
                       "T_IF N_EXPR T_THEN N_STMT T_ELSE N_STMT");
-			  if ($2.type != BOOL) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
+                }
+				| T_IF N_EXPR {
+					//Make two new labels
+					//Run Jump False to first label
+					printf("\tjf L.%d\n", countLabel);
+					ifElseLabels.push(countLabel);
+					countLabel++;
+					
+					if ($2.type != BOOL) 
+				    {
+					  semanticError(ERR_EXPR_MUST_BE_BOOL);
+					  return(0);
+				    }
+					
+				  } T_THEN N_STMT
+                  {  
+					//Run STMT
+					//Run Jump to second label
+					printf("\tjp L.%d\n", countLabel);
+					ifElseLabels.push(countLabel);
+					countLabel++;
+					
+					printf("L.%d:\n", ifElseLabels.top());
+					ifElseLabels.pop();
+					printf("L.%d:\n", ifElseLabels.top());
+					ifElseLabels.pop();
+					prRule("N_CONDITION", 
+                           "T_IF N_EXPR T_THEN N_STMT");
+				    
                   }
                 ;
 N_CONST         : N_INTCONST
