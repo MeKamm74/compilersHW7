@@ -49,8 +49,15 @@ extern "C" {
 #define OUTPUT_PRODUCTIONS 0
 #define OUTPUT_ST_MGT      0
 
-#define LOGICAL_OP    100
-#define ARITHMETIC_OP 101
+#define LOGICAL_OP    103
+#define OR_OP		  104
+#define AND_OP		  105
+ 
+#define ARITHMETIC_OP 102
+#define ADD_OP		  101
+#define SUB_OP        100
+#define MULT_OP	      99
+#define DIV_OP        98
 
 #define POSITIVE		1
 #define NEGATIVE		-1
@@ -129,7 +136,8 @@ const Cstring ERR_MSG[] = {
 %token      ST_EOF
 
 %type <ch> T_CHARCONST
-%type <num> N_IDX T_INTCONST N_ADDOP N_MULTOP N_SIGN N_INTCONST 
+%type <num> N_IDX T_INTCONST N_ADDOP N_ADDOP_ARITH N_ADDOP_LOGICAL 
+%type <num> N_MULTOP_ARITH N_MULTOP_LOGICAL N_MULTOP N_SIGN N_INTCONST 
 %type <text> T_IDENT N_IDENT
 %type <typeInfo> N_ARRAY N_BOOLCONST N_CONST 
 %type <typeInfo> N_ENTIREVAR N_ARRAYVAR
@@ -164,25 +172,28 @@ N_START         : N_PROG
 N_ADDOP         : N_ADDOP_LOGICAL
                   {
 			  prRule("N_ADDOP", "N_ADDOP_LOGICAL");
-			  $$ = LOGICAL_OP;
+			  $$ = $1;
                   }
                 | N_ADDOP_ARITH
                   {
 			  prRule("N_ADDOP", "N_ADDOP_ARITH");
-			  $$ = ARITHMETIC_OP;
+			  $$ = $1;
                   }
                 ;
 N_ADDOP_LOGICAL : T_OR
 			  {
+				  $$ = OR_OP;
 			  prRule("N_ADDOP_LOGICAL", "T_OR");
 			  }
                 ;
 N_ADDOP_ARITH   : T_PLUS
 			  {
+				  $$ = ADD_OP;
 			  prRule("N_ADDOP_ARITH", "T_PLUS");
 			  }
                 | T_MINUS
 			  {
+				  $$ = SUB_OP;
 			  prRule("N_ADDOP_ARITH", "T_MINUS");
 			  }
                 ;
@@ -192,19 +203,29 @@ N_ADDOPLST      : /* epsilon */
 			  }
                 | N_ADDOP N_TERM N_ADDOPLST
 			  {
-			  prRule("N_ADDOPLST", 
-			         "N_ADDOP N_TERM N_ADDOPLST");
-			  if (($1 == LOGICAL_OP) && ($2.type != BOOL)) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
-			  else if (($1 == ARITHMETIC_OP) &&
-				      ($2.type != INT)) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_INT);
-			    return(0);
-			  }
+				  //print deref, add or subtract
+				  //if($2.isVar)
+					//printf("\tderef\n");
+				  if($1 == ADD_OP)
+					  printf("\tadd\n");
+				  else if($1 == SUB_OP)
+					  printf("\tsub\n");
+				  else if($1 == OR_OP)
+					  printf("\tor\n");
+				  
+				  prRule("N_ADDOPLST", 
+						 "N_ADDOP N_TERM N_ADDOPLST");
+				  if (($1 > LOGICAL_OP) && ($2.type != BOOL)) 
+				  {
+					semanticError(ERR_EXPR_MUST_BE_BOOL);
+					return(0);
+				  }
+				  else if (($1 < ARITHMETIC_OP) &&
+						  ($2.type != INT)) 
+				  {
+					semanticError(ERR_EXPR_MUST_BE_INT);
+					return(0);
+				  }
 			  }
                 ;
 N_ARRAY         : T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF
@@ -242,8 +263,8 @@ N_ASSIGN        : N_VARIABLE T_ASSIGN N_EXPR
 					  // st
 					  
 					  int val = $1.offset;
-					  if($3.isVar)
-						  printf("\tderef\n");
+					  //if($3.isVar)
+						  //printf("\tderef\n");
 					  printf("\tst\n");
 					  			  			  
                 	  prRule("N_ASSIGN", 
@@ -336,10 +357,10 @@ N_CONST         : N_INTCONST
 					  $$.offset = int($1);
 					  printf("\tlc %d\n", $$.offset);
 					  $$.isVar = false;
-			  $$.type = INT; 
-               	  $$.startIndex = NOT_APPLICABLE;
-              	  $$.endIndex = NOT_APPLICABLE;
-		    	  $$.baseType = NOT_APPLICABLE;
+					  $$.type = INT; 
+					  $$.startIndex = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                   }
                 | T_CHARCONST
                	  {
@@ -347,32 +368,32 @@ N_CONST         : N_INTCONST
 					  $$.isVar = false;
 					  printf("\tlc %d\n", $$.offset);
                 	  prRule("N_CONST", "T_CHARCONST");
-			  $$.type = CHAR; 
+					  $$.type = CHAR; 
                 	  $$.startIndex = NOT_APPLICABLE;
-               	  $$.endIndex = NOT_APPLICABLE;
-		     	  $$.baseType = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                	  }
                 | N_BOOLCONST
                   {
 					  $$.offset = $1.offset;
 					  $$.isVar = false;
 					  printf("\tlc %d\n", $$.offset);
-               	  prRule("N_CONST", "N_BOOLCONST");
-			  $$.type = BOOL; 
+					  prRule("N_CONST", "N_BOOLCONST");
+					  $$.type = BOOL; 
                 	  $$.startIndex = NOT_APPLICABLE;
-               	  $$.endIndex = NOT_APPLICABLE;
-		     	  $$.baseType = NOT_APPLICABLE;
+					  $$.endIndex = NOT_APPLICABLE;
+					  $$.baseType = NOT_APPLICABLE;
                   }
                 ;
 N_ENTIREVAR     : N_VARIDENT
                   {
-              	  prRule("N_ENTIREVAR", "N_VARIDENT");
-				  $$.offset = $1.offset;
-				  $$.isVar = $1.isVar;
-              	  $$.type = $1.type; 
+					  prRule("N_ENTIREVAR", "N_VARIDENT");
+					  $$.offset = $1.offset;
+					  $$.isVar = $1.isVar;
+					  $$.type = $1.type; 
                 	  $$.startIndex = $1.startIndex;
-               	  $$.endIndex = $1.endIndex;
-		     	  $$.baseType = $1.baseType;
+					  $$.endIndex = $1.endIndex;
+					  $$.baseType = $1.baseType;
                   }
                 ;
 N_EXPR          : N_SIMPLEEXPR
@@ -405,6 +426,7 @@ N_EXPR          : N_SIMPLEEXPR
                 ;
 N_FACTOR        : N_SIGN N_VARIABLE
               	  {
+					  printf("\tderef\n");
             	  prRule("N_FACTOR", "N_SIGN N_VARIABLE");
 			  if (($1 != NO_SIGN) && ($2.type != INT)) 
 			  {
@@ -541,27 +563,30 @@ N_INTCONST      : N_SIGN T_INTCONST
 N_MULTOP        : N_MULTOP_LOGICAL
              	  {
              	  prRule("N_MULTOP", "N_MULTOP_LOGICAL");
-			  $$ = LOGICAL_OP;
+			  $$ = $1;
                 	  }
                 | N_MULTOP_ARITH
              	  {
              	  prRule("N_MULTOP", "N_MULTOP_ARITH");
-			  $$ = ARITHMETIC_OP;
+			  $$ = $1;
               	  }
                 ;
 N_MULTOP_LOGICAL : T_AND
               	  {
-               	  prRule("N_MULTOP_LOGICAL", "T_AND");
-                	  }
+					  $$ = AND_OP;
+					  prRule("N_MULTOP_LOGICAL", "T_AND");
+                  }
                 ;
 N_MULTOP_ARITH  : T_MULT
-                	  {
-                	  prRule("N_MULTOP_ARITH", "T_MULT");
+                  {
+					  $$ = MULT_OP;
+					  prRule("N_MULTOP_ARITH", "T_MULT");
                	  }
                 | T_DIV
                	  {
-                	  prRule("N_MULTOP_ARITH", "T_DIV");
-                	  }
+					  $$ = DIV_OP;
+					  prRule("N_MULTOP_ARITH", "T_DIV");
+                  }
                 ;
 N_MULTOPLST     : /* epsilon */
              	  {
@@ -569,28 +594,40 @@ N_MULTOPLST     : /* epsilon */
                	  }
                 | N_MULTOP N_FACTOR N_MULTOPLST
               	  {
-              	  prRule("N_MULTOPLST", 
-               	         "N_MULTOP N_FACTOR N_MULTOPLST");
-			  if (($1 == LOGICAL_OP) && ($2.type != BOOL))
- 			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
-			  else if (($1 == ARITHMETIC_OP) &&
-			           ($2.type != INT)) 
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_INT);
-			    return(0);
-			  }
+					  //print deref, add or subtract
+					  //if($2.isVar)
+						 // printf("\tderef\n");
+					  if($1 == MULT_OP)
+						  printf("\tmult\n");
+					  else if($1 == DIV_OP)
+						  printf("\tdiv\n");
+					  else if($1 == AND_OP)
+						  printf("\tand\n");
+					  
+					  prRule("N_MULTOPLST", 
+							 "N_MULTOP N_FACTOR N_MULTOPLST");
+					  if (($1 > LOGICAL_OP) && ($2.type != BOOL))
+					  {
+						semanticError(ERR_EXPR_MUST_BE_BOOL);
+						return(0);
+					  }
+					  else if (($1 < ARITHMETIC_OP) &&
+							   ($2.type != INT)) 
+					  {
+						semanticError(ERR_EXPR_MUST_BE_INT);
+						return(0);
+					  }
              	  }
                 ;
 N_OUTPUT        : N_EXPR
              	  {
 					  
+					//if($1.isVar)  
+					    //printf("\tderef\n");
 				    if($1.type == INT)
-						printf("\tderef\n\tiwrite\n");
+						printf("\tiwrite\n");
 					else
-						printf("\tderef\n\tcwrite\n");
+						printf("\tcwrite\n");
 					  
 					  
               	  prRule("N_OUTPUT", "N_EXPR");
@@ -772,15 +809,15 @@ N_SIMPLE        : T_INT
                 	  }
                 ;
 N_SIMPLEEXPR    : N_TERM N_ADDOPLST
-                	  {
-                	  prRule("N_SIMPLEEXPR", 
-               	         "N_TERM N_ADDOPLST");
-			  $$.type = $1.type; 
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;
-               	  $$.startIndex = $1.startIndex;
-                	  $$.endIndex = $1.endIndex;
-		    	  $$.baseType = $1.baseType;
+                	  {  
+						  prRule("N_SIMPLEEXPR", 
+							 "N_TERM N_ADDOPLST");
+						  $$.type = $1.type; 
+						  $$.isVar = $1.isVar;
+						  $$.offset = $1.offset;
+						  $$.startIndex = $1.startIndex;
+						  $$.endIndex = $1.endIndex;
+						  $$.baseType = $1.baseType;
                 	  }
                 ;
 N_STMT          : N_ASSIGN
@@ -829,13 +866,14 @@ N_STMTPART      : N_COMPOUND
                 ;
 N_TERM          : N_FACTOR N_MULTOPLST
                	  {
-               	  prRule("N_TERM", "N_FACTOR N_MULTOPLST");
-			  $$.type = $1.type; 
-			  $$.isVar = $1.isVar;
-			  $$.offset = $1.offset;
+					  
+					  prRule("N_TERM", "N_FACTOR N_MULTOPLST");
+					  $$.type = $1.type; 
+					  $$.isVar = $1.isVar;
+					  $$.offset = $1.offset;
                 	  $$.startIndex = $1.startIndex;
                 	  $$.endIndex = $1.endIndex;
-		     	  $$.baseType = $1.baseType;
+		     	      $$.baseType = $1.baseType;
                	  }
                 ;
 N_TYPE          : N_SIMPLE
