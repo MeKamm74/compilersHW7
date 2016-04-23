@@ -346,7 +346,7 @@ N_COMPOUND      : T_BEGIN N_STMT N_STMTLST T_END
 					       "T_BEGIN N_STMT N_STMTLST T_END");
                   }
                 ;
-N_CONDITION     : T_IF N_EXPR{
+N_CONDITION     : T_IF N_EXPR {
 					//Make two new labels
 					//Run Jump False to first label
 					printf("\tjf L.%d\n", countLabel);
@@ -358,7 +358,7 @@ N_CONDITION     : T_IF N_EXPR{
 					semanticError(ERR_EXPR_MUST_BE_BOOL);
 					return(0);
 				  }	
-				} T_THEN N_STMT T_ELSE {
+				} T_THEN N_STMT {
 					//Run STMT
 					//Run Jump to second label
 					printf("\tjp L.%d\n", countLabel);
@@ -369,13 +369,19 @@ N_CONDITION     : T_IF N_EXPR{
 					ifElseLabels.push(countLabel);
 					countLabel++;
 					
-				} N_STMT {
+				} N_ELSE {}
+
+N_ELSE			:	T_ELSE N_STMT {
 					printf("L.%d:\n", ifElseLabels.top());
 					ifElseLabels.pop();
                     prRule("N_CONDITION",
                       "T_IF N_EXPR T_THEN N_STMT T_ELSE N_STMT");
                 }
-				| T_IF N_EXPR {
+				| /* epsilon */ {
+					printf("L.%d:\n", ifElseLabels.top());
+					ifElseLabels.pop();
+				}
+				/*| T_IF N_EXPR {
 					//Make two new labels
 					//Run Jump False to first label
 					printf("\tjf L.%d\n", countLabel);
@@ -389,7 +395,7 @@ N_CONDITION     : T_IF N_EXPR{
 				    }
 					
 				  } T_THEN N_STMT
-                  {  
+				  {  
 					//Run STMT
 					//Run Jump to second label
 					printf("\tjp L.%d\n", countLabel);
@@ -401,9 +407,9 @@ N_CONDITION     : T_IF N_EXPR{
 					printf("L.%d:\n", ifElseLabels.top());
 					ifElseLabels.pop();
 					prRule("N_CONDITION", 
-                           "T_IF N_EXPR T_THEN N_STMT");
-				    
-                  }
+						   "T_IF N_EXPR T_THEN N_STMT");
+					
+				  }*/
                 ;
 N_CONST         : N_INTCONST
                   {
