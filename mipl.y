@@ -302,7 +302,7 @@ N_BLOCK         : N_VARDECPART {
 						firstTime = false;
 				    }
 					level++;
-				  }N_PROCDECPART {
+				  } N_PROCDECPART {
 					//PRINT PROCEDURE OAL CODE, ELSEWHERE
 				    level--;
 					if(level == 0) {			
@@ -734,17 +734,18 @@ N_OUTPUTLST     : /* epsilon */
 			         "T_COMMA N_OUTPUT N_OUTPUTLST");
             	  }
                 ;
-N_PROCDEC       : N_PROCHDR N_BLOCK
+N_PROCDEC       : N_PROCHDR { 
+					printf("L.%d:\n", $1);
+				  } N_BLOCK
              	  {
-					  //$$ = $1;
-					  
+					  $$ = $1;  
 					  prRule("N_PROCDEC", "N_PROCHDR N_BLOCK");
              	  }
                 ;
 N_PROCHDR       : T_PROC T_IDENT T_SCOLON
              	  {
-					  //$$ = countLabel;
-					  printf("L.%d:\n", countLabel);
+					  $$ = countLabel;
+					  
                 	  prRule("N_PROCHDR",
 			         "T_PROC T_IDENT T_SCOLON");
 					  string lexeme = string($2);
@@ -766,6 +767,7 @@ N_PROCHDR       : T_PROC T_IDENT T_SCOLON
                 ;
 N_PROCDECPART   : /* epsilon */
              	  {
+					$$ = 0;
 					prRule("N_PROCDECPART", "epsilon");
                	  }
                   | N_PROCDEC T_SCOLON N_PROCDECPART
