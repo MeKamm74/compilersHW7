@@ -9,6 +9,6 @@ begin
   y := z div x;
   x := -1 + x;
   z := 123 - 5;
-  write(x, '\', y, '\', z)
+  write(x, '\', y, '\' z)
 end.
 
