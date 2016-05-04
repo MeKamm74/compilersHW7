@@ -72,6 +72,7 @@ extern "C" {
 
 int lineNum = 1;                   // source line number
 int numTabs = 0;
+int numVars = 0;
 int level = 0;
 int count = 20;
 int countLabel = 3;
@@ -209,39 +210,44 @@ N_ADDOP_ARITH   : T_PLUS
 			  }
                 ;
 N_ADDOPLST      : /* epsilon */
-			  {
-			  prRule("N_ADDOPLST", "epsilon");
-			  }
+        			  {
+        			    prRule("N_ADDOPLST", "epsilon");
+        			  }
                 | N_ADDOP N_TERM N_ADDOPLST
-			  {
-				  prRule("N_ADDOPLST",
-						 "N_ADDOP N_TERM N_ADDOPLST");
-				  if (($1 > LOGICAL_OP) && ($2.type != BOOL))
-				  {
-					semanticError(ERR_EXPR_MUST_BE_BOOL);
-					return(0);
-				  }
-				  else if (($1 < ARITHMETIC_OP) &&
-						  ($2.type != INT))
-				  {
-					semanticError(ERR_EXPR_MUST_BE_INT);
-					return(0);
-				  }
-			  }
-                ;
-N_ARRAY         : T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF
-			  N_SIMPLE
-                  {
-					prRule("N_ARRAY",
-                	       "T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF N_SIMPLE");
-					$$.type = ARRAY;
-                	$$.startIndex = $3.startIndex;
-					$$.endIndex = $3.endIndex;
-					$$.baseType = $6.type;
-                  }
-                ;
+        			  {
+        				  prRule("N_ADDOPLST",
+        						 "N_ADDOP N_TERM N_ADDOPLST");
+        				  if (($1 > LOGICAL_OP) && ($2.type != BOOL))
+        				  {
+        					semanticError(ERR_EXPR_MUST_BE_BOOL);
+        					return(0);
+        				  }
+        				  else if (($1 < ARITHMETIC_OP) &&
+        						  ($2.type != INT))
+        				  {
+        					semanticError(ERR_EXPR_MUST_BE_INT);
+        					return(0);
+        				  }
+        			  };
+
+N_ARRAY         : N_ARRAYSYMBOL T_LBRACK N_IDXRANGE T_RBRACK T_OF N_SIMPLE
+                {
+                  // printf(" = [0 for i in range()]");
+			            prRule("N_ARRAY",
+            	    "T_ARRAY T_LBRACK N_IDXRANGE T_RBRACK T_OF N_SIMPLE");
+			            $$.type = ARRAY;
+            	    $$.startIndex = $3.startIndex;
+			            $$.endIndex = $3.endIndex;
+			            $$.baseType = $6.type;
+                };
+
+N_ARRAYSYMBOL   : T_ARRAY {
+                  printf("[0 for i in range(");
+                };
+
 N_ARRAYVAR      : N_ENTIREVAR
                   {
+                    printf("[");
                 	  prRule("N_ARRAYVAR", "N_ENTIREVAR");
         					  $$.offset = $1.offset;
         					  $$.isVar = $1.isVar;
@@ -503,16 +509,19 @@ N_NOT           : T_NOT {
                 };
 
 N_IDENT         : T_IDENT
-              	  {
-					  prRule("N_IDENT", "T_IDENT");
-					  $$ = $1;
-              	  }
+              	{
+                  numVars++;
+                  printf("%s ", $1);
+        				  prRule("N_IDENT", "T_IDENT");
+        				  $$ = $1;
+              	}
                 ;
 N_IDENTLST      : /* epsilon */
               	  {
+                    printf("= ");
 					  prRule("N_IDENTLST", "epsilon");
                	  }
-                | T_COMMA N_IDENT N_IDENTLST
+                | N_COMMA N_IDENT N_IDENTLST
                	  {
 					  prRule("N_IDENTLST",
                 	         "T_COMMA N_IDENT N_IDENTLST");
@@ -520,36 +529,46 @@ N_IDENTLST      : /* epsilon */
 					  variableNames.push_front(varName);
               	  }
                 ;
+N_COMMA         : T_COMMA {
+                  printf("= ");
+                };
+
 N_IDX           : N_INTCONST
-              	  {
-					  prRule("N_IDX", "N_INTCONST");
-					  $$ = $1;
-               	  }
+              	{
+        					  prRule("N_IDX", "N_INTCONST");
+        					  $$ = $1;
+               	}
                 ;
-N_IDXRANGE      : N_IDX T_DOTDOT N_IDX
+N_IDXRANGE      : N_IDX N_DOTDOT N_IDX
              	  {
+                  printf("+1)]");
                	  prRule("N_IDXRANGE", "N_IDX T_DOTDOT N_IDX");
-		     	  $$.type = INDEX_RANGE;
-                	  $$.startIndex = $1;
+		     	        $$.type = INDEX_RANGE;
+                	$$.startIndex = $1;
                	  $$.endIndex = $3;
-		    	  $$.baseType = NOT_APPLICABLE;
-               	  }
-                ;
+		    	        $$.baseType = NOT_APPLICABLE;
+               	};
+
+N_DOTDOT        : T_DOTDOT {
+                  printf(", ");
+                };
+
 N_IDXVAR        : N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK
                	  {
-					  prRule("N_IDXVAR",
-							 "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
-					  if ($3.type != INT)
-					  {
-						semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
-						return(0);
-					  }
-					  $$.isVar = $1.isVar;
-					  $$.offset = $1.offset - $1.startIndex - 1;
-					  $$.type = $1.baseType;
-					  $$.startIndex = NOT_APPLICABLE;
-					  $$.endIndex = NOT_APPLICABLE;
-					  $$.baseType = NOT_APPLICABLE;
+                    printf("- %d]", $1.startIndex);
+        					  prRule("N_IDXVAR",
+        							 "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
+        					  if ($3.type != INT)
+        					  {
+          						semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
+          						return(0);
+        					  }
+        					  $$.isVar = $1.isVar;
+        					  $$.offset = $1.offset - $1.startIndex - 1;
+        					  $$.type = $1.baseType;
+        					  $$.startIndex = NOT_APPLICABLE;
+        					  $$.endIndex = NOT_APPLICABLE;
+        					  $$.baseType = NOT_APPLICABLE;
               	  }
                 ;
 N_INPUTLST      : /* epsilon */
@@ -587,10 +606,10 @@ N_INPUTVAR      : N_VARIABLE
 N_INTCONST      : N_SIGN T_INTCONST
               	  {
                     printf("%d ", $2);
-               	  prRule("N_INTCONST", "N_SIGN T_INTCONST");
-			  if ($1 == NO_SIGN)
-			    $$ = $2;
-			  else $$ = $1 * $2;
+               	    prRule("N_INTCONST", "N_SIGN T_INTCONST");
+          			    if ($1 == NO_SIGN)
+          			    $$ = $2;
+          			    else $$ = $1 * $2;
                	  }
                 ;
 N_MULTOP        : N_MULTOP_LOGICAL
@@ -917,35 +936,37 @@ N_STMTPART      : N_COMPOUND
                 ;
 N_TERM          : N_FACTOR N_MULTOPLST
                	  {
-
-					  prRule("N_TERM", "N_FACTOR N_MULTOPLST");
-					  $$.type = $1.type;
-					  $$.isVar = $1.isVar;
-					  $$.offset = $1.offset;
+        					  prRule("N_TERM", "N_FACTOR N_MULTOPLST");
+        					  $$.type = $1.type;
+        					  $$.isVar = $1.isVar;
+        					  $$.offset = $1.offset;
                 	  $$.startIndex = $1.startIndex;
                 	  $$.endIndex = $1.endIndex;
-		     	      $$.baseType = $1.baseType;
+		     	          $$.baseType = $1.baseType;
                	  }
                 ;
 N_TYPE          : N_SIMPLE
-               	  {
-               	  prRule("N_TYPE", "N_SIMPLE");
-			  $$.type = $1.type;
-               	  $$.startIndex = $1.startIndex;
-               	  $$.endIndex = $1.endIndex;
-		    	  $$.baseType = $1.baseType;
-              	  }
+             	  {
+                  printf("0");
+             	    prRule("N_TYPE", "N_SIMPLE");
+		              $$.type = $1.type;
+             	    $$.startIndex = $1.startIndex;
+             	    $$.endIndex = $1.endIndex;
+	    	          $$.baseType = $1.baseType;
+            	  }
                 | N_ARRAY
-              	  {
+              	{
               	  prRule("N_TYPE", "N_ARRAY");
-			  $$.type = $1.type;
+			            $$.type = $1.type;
                	  $$.startIndex = $1.startIndex;
                	  $$.endIndex = $1.endIndex;
-		     	  $$.baseType = $1.baseType;
-                	  }
+		     	        $$.baseType = $1.baseType;
+                }
                 ;
 N_VARDEC        : N_IDENT N_IDENTLST T_COLON N_TYPE
               	  {
+                    printf("\n");
+                    numVars = 0;
               	  prRule("N_VARDEC",
              	         "N_IDENT N_IDENTLST T_COLON N_TYPE");
 			  string varName = string($1);
