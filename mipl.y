@@ -148,8 +148,8 @@ const Cstring ERR_MSG[] = {
 %type <ch> T_CHARCONST
 %type <num> N_IDX T_INTCONST N_ADDOP N_ADDOP_ARITH N_ADDOP_LOGICAL N_RELOP
 %type <num> N_MULTOP_ARITH N_MULTOP_LOGICAL N_MULTOP N_SIGN N_INTCONST
-%type <num> N_PROCDEC N_PROCHDR N_PROCDECPART
-%type <text> T_IDENT N_IDENT
+%type <num> N_PROCDEC N_PROCDECPART
+%type <text> T_IDENT N_IDENT N_PROCHDR
 %type <typeInfo> N_ARRAY N_BOOLCONST N_CONST
 %type <typeInfo> N_ENTIREVAR N_ARRAYVAR
 %type <typeInfo> N_VARIDENT N_FACTOR N_TERM N_VARIABLE N_INPUTVAR
@@ -173,6 +173,7 @@ const Cstring ERR_MSG[] = {
 %%
 N_START         : N_PROG
                   {
+                    printf("print()\n");
             			  prRule("N_START", "N_PROG");
             			  //printf("\n---- Completed parsing ----\n\n");
             			  return 0;
@@ -281,22 +282,22 @@ N_ASSIGN        : N_VARIABLE N_ASSIGNCHAR N_EXPR
         					    semanticError(ERR_EXPR_MUST_BE_SAME_AS_VAR);
         						  return(0);
                     }
-             	  }
-                ;
+             	  };
+
 N_ASSIGNCHAR    : T_ASSIGN {
                   printf("= ");
                 }
 N_BLOCK         : N_VARDECPART {
 					//print bss + (20+numVars)
-					if(firstTime) {
-						firstTime = false;
-				    }
-					level++;
+					// if(firstTime) {
+					// 	firstTime = false;
+				  //   }
+					// level++;
 				  } N_PROCDECPART {
 					//PRINT PROCEDURE OAL CODE, ELSEWHERE
-				    level--;
-					if(level == 0) {
-				    }
+				  //   level--;
+					// if(level == 0) {
+				  //   }
 				  }
 				  N_STMTPART
                   {
@@ -342,39 +343,44 @@ N_COMPOUND      : T_BEGIN {
         					       "T_BEGIN N_STMT N_STMTLST T_END");
                 }
                 ;
-N_CONDITION     : T_IF N_EXPR {
-        					//Make two new labels
-        					//Run Jump False to first label
-        					printf("\tjf L.%d\n", countLabel);
-        					ifElseLabels.push(countLabel);
-        					countLabel++;
-
+N_CONDITION     : N_IF N_EXPR {
+        					printf(":\n");
+                  numTabs++;
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
         				  if ($2.type != BOOL)
         				  {
-        					semanticError(ERR_EXPR_MUST_BE_BOOL);
-        					return(0);
+          					semanticError(ERR_EXPR_MUST_BE_BOOL);
+          					return(0);
         				  }
         				} T_THEN N_STMT {
-
-      					ifElseLabels.pop();
-
-      					ifElseLabels.push(countLabel);
-      					countLabel++;
+                  numTabs--;
+                  printf("\n");
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
 
                 } N_ELSE {};
 
-N_ELSE			:	T_ELSE N_STMT {
-        					printf("L.%d:\n", ifElseLabels.top());
-        					ifElseLabels.pop();
+N_IF            : T_IF {
+                  printf("if ");
+                };
+
+N_ELSE			    :	T_ELSE {
+                  printf("else:\n");
+                  numTabs++;
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
+                } N_STMT {
+                  numTabs--;
+                  printf("\n");
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
+
                   prRule("N_CONDITION",
                     "T_IF N_EXPR T_THEN N_STMT T_ELSE N_STMT");
                 }
-        				| /* epsilon */ {
-        					printf("L.%d:\n", ifElseLabels.top());
-        					ifElseLabels.pop();
-        				}
+        				| /* epsilon */ {};
 
-                ;
 N_CONST         : N_INTCONST
                   {
                 	  prRule("N_CONST", "N_INTCONST");
@@ -510,7 +516,9 @@ N_NOT           : T_NOT {
 
 N_IDENT         : T_IDENT
               	{
-                  numVars++;
+                  // for(int i=0; i<numTabs; i++)
+                  //   printf("\t");
+
                   printf("%s ", $1);
         				  prRule("N_IDENT", "T_IDENT");
         				  $$ = $1;
@@ -554,53 +562,54 @@ N_DOTDOT        : T_DOTDOT {
                 };
 
 N_IDXVAR        : N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK
-               	  {
-                    printf("- %d]", $1.startIndex);
-        					  prRule("N_IDXVAR",
-        							 "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
-        					  if ($3.type != INT)
-        					  {
-          						semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
-          						return(0);
-        					  }
-        					  $$.isVar = $1.isVar;
-        					  $$.offset = $1.offset - $1.startIndex - 1;
-        					  $$.type = $1.baseType;
-        					  $$.startIndex = NOT_APPLICABLE;
-        					  $$.endIndex = NOT_APPLICABLE;
-        					  $$.baseType = NOT_APPLICABLE;
-              	  }
-                ;
+             	  {
+                  printf("- %d]", $1.startIndex);
+      					  prRule("N_IDXVAR",
+      							 "N_ARRAYVAR T_LBRACK N_EXPR T_RBRACK");
+      					  if ($3.type != INT)
+      					  {
+        						semanticError(ERR_INDEX_EXPR_MUST_BE_INT);
+        						return(0);
+      					  }
+      					  $$.isVar = $1.isVar;
+      					  $$.offset = $1.offset - $1.startIndex - 1;
+      					  $$.type = $1.baseType;
+      					  $$.startIndex = NOT_APPLICABLE;
+      					  $$.endIndex = NOT_APPLICABLE;
+      					  $$.baseType = NOT_APPLICABLE;
+            	  };
+
 N_INPUTLST      : /* epsilon */
              	  {
-           	  prRule("N_INPUTLST", "epsilon");
+           	      prRule("N_INPUTLST", "epsilon");
              	  }
                 | T_COMMA N_INPUTVAR N_INPUTLST
             	  {
-             	  prRule("N_INPUTLST",
+             	    prRule("N_INPUTLST",
               	         "T_COMMA N_INPUTVAR N_INPUTLST");
-            	  }
-                ;
+            	  };
+
 N_INPUTVAR      : N_VARIABLE
-              	  {
-					  if($1.type == INT)
-						printf("\tiread\n");
-					  else
-						printf("\tcread\n");
+              	{
+                  if($1.type == INT)
+					          printf(" = int(raw_input())\n");
+                  else
+                    printf(" = raw_input()\n");
+                  
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
 
-					  printf("\tst\n");
-
-					  prRule("N_INPUTVAR", "N_VARIABLE");
-					  if (($1.type != INT) && ($1.type != CHAR))
-					  {
-						semanticError(
-						ERR_INPUT_VAR_MUST_BE_INT_OR_CHAR);
-						return(0);
-                	  }
-					  $$.type = $1.type;
-                	  $$.startIndex = $1.startIndex;
-                	  $$.endIndex = $1.endIndex;
-					  $$.baseType = $1.baseType;
+      					  prRule("N_INPUTVAR", "N_VARIABLE");
+      					  if (($1.type != INT) && ($1.type != CHAR))
+      					  {
+        						semanticError(
+        						ERR_INPUT_VAR_MUST_BE_INT_OR_CHAR);
+        						return(0);
+                  }
+      					  $$.type = $1.type;
+              	  $$.startIndex = $1.startIndex;
+              	  $$.endIndex = $1.endIndex;
+      					  $$.baseType = $1.baseType;
              	  }
                 ;
 N_INTCONST      : N_SIGN T_INTCONST
@@ -691,39 +700,41 @@ N_OUTPUTLST     : /* epsilon */
              	  {
               	  prRule("N_OUTPUTLST",
 			         "T_COMMA N_OUTPUT N_OUTPUTLST");
-            	  }
-                ;
+            	  };
+
 N_PROCDEC       : N_PROCHDR {
-					printf("L.%d:\n", $1);
-				  } N_BLOCK
-             	  {
-					  $$ = $1;
-					  prRule("N_PROCDEC", "N_PROCHDR N_BLOCK");
-             	  }
-                ;
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
+      					  printf("def %s():\n", $1);
+                  numTabs++;
+      				  } N_BLOCK {
+      					  // $$ = $1;
+                  numTabs--;
+      					  prRule("N_PROCDEC", "N_PROCHDR N_BLOCK");
+             	  };
+
 N_PROCHDR       : T_PROC T_IDENT T_SCOLON
              	  {
-					  $$ = countLabel;
+					        $$ = $2;
 
-                	  prRule("N_PROCHDR",
-			         "T_PROC T_IDENT T_SCOLON");
-					  string lexeme = string($2);
-					  TYPE_INFO info = {PROCEDURE, NOT_APPLICABLE,
-		                          NOT_APPLICABLE,
-		                          NOT_APPLICABLE, countLabel, true};
-					  prSymbolTableAddition(lexeme, info);
-					  bool success = scopeStack.top().addEntry
-         	                    (SYMBOL_TABLE_ENTRY(lexeme, info));
-					  countLabel++;
-					  if (! success)
-					  {
-						semanticError(ERR_MULTIPLY_DEFINED_IDENT);
-						return(0);
-					  }
+                	prRule("N_PROCHDR",
+			                   "T_PROC T_IDENT T_SCOLON");
+      					  string lexeme = string($2);
+      					  TYPE_INFO info = {PROCEDURE, NOT_APPLICABLE,
+      		                          NOT_APPLICABLE,
+      		                          NOT_APPLICABLE, countLabel, true};
+      					  prSymbolTableAddition(lexeme, info);
+      					  bool success = scopeStack.top().addEntry(SYMBOL_TABLE_ENTRY(lexeme, info));
+      					  countLabel++;
+      					  if (! success)
+      					  {
+        						semanticError(ERR_MULTIPLY_DEFINED_IDENT);
+        						return(0);
+      					  }
 
-					  beginScope();
-                  }
-                ;
+      					  beginScope();
+                };
+
 N_PROCDECPART   : /* epsilon */
              	  {
 					$$ = 0;
@@ -738,13 +749,14 @@ N_PROCDECPART   : /* epsilon */
                 ;
 N_PROCIDENT     : T_IDENT
               	  {
+                    printf("%s", $1);
           					prRule("N_PROCIDENT", "T_IDENT");
           					string ident = string($1);
                     TYPE_INFO typeInfo = findEntryInAnyScope(ident);
           					if (typeInfo.type == UNDEFINED)
           					{
-                          	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
-                          	    return(0);
+                	    semanticError(ERR_MULTIPLY_DEFINED_IDENT);
+                	    return(0);
           					}
           					$$.offset = typeInfo.offset;
         				    $$.type = typeInfo.type;
@@ -755,7 +767,7 @@ N_PROCIDENT     : T_IDENT
                 ;
 N_PROCSTMT      : N_PROCIDENT
                	{
-        					  printf("\tjs L.%d\n", $1.offset);
+        					  printf("()");
         					  prRule("N_PROCSTMT", "N_PROCIDENT");
         					  if ($1.type != PROCEDURE)
         					  {
@@ -766,6 +778,7 @@ N_PROCSTMT      : N_PROCIDENT
                 ;
 N_PROG          : N_PROGLBL T_IDENT T_SCOLON
              	  {
+                  printf("from __future__ import print_function\n");
 
              	  prRule("N_PROG",
                      "N_PROGLBL T_IDENT T_SCOLON N_BLOCK T_DOT");
@@ -966,7 +979,6 @@ N_TYPE          : N_SIMPLE
 N_VARDEC        : N_IDENT N_IDENTLST T_COLON N_TYPE
               	  {
                     printf("\n");
-                    numVars = 0;
               	  prRule("N_VARDEC",
              	         "N_IDENT N_IDENTLST T_COLON N_TYPE");
 			  string varName = string($1);
@@ -1019,7 +1031,10 @@ N_VARDECLST     : /* epsilon */
              	  {
              	  prRule("N_VARDECLST", "epsilon");
              	  }
-                | N_VARDEC T_SCOLON N_VARDECLST
+                | {
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
+                } N_VARDEC T_SCOLON N_VARDECLST
               	  {
               	  prRule("N_VARDECLST",
               	         "N_VARDEC T_SCOLON N_VARDECLST");
@@ -1029,7 +1044,10 @@ N_VARDECPART    : /* epsilon */
               	  {
                 	  prRule("N_VARDECPART", "epsilon");
                	  }
-                | T_VAR N_VARDEC T_SCOLON N_VARDECLST
+                | T_VAR {
+                  for(int i=0; i<numTabs; i++)
+                    printf("\t");
+                } N_VARDEC T_SCOLON N_VARDECLST
                	  {
               	  prRule("N_VARDECPART",
                         "T_VAR N_VARDEC T_SCOLON N_VARDECLST");
@@ -1084,23 +1102,35 @@ N_VARIDENT      : T_IDENT
 			  $$.baseType = typeInfo.baseType;
 			  }
                 ;
-N_WHILE         : T_WHILE N_EXPR
+N_WHILE         : N_WHILESYMBOL N_EXPR
               	  {
-               	  prRule("N_WHILE",
+                    printf(":\n");
+                    numTabs++;
+                    // for(int i=0; i<numTabs; i++)
+                    //   printf("\t");
+               	    prRule("N_WHILE",
                 	         "T_WHILE N_EXPR T_DO N_STMT");
-			  if ($2.type != BOOL)
-			  {
-			    semanticError(ERR_EXPR_MUST_BE_BOOL);
-			    return(0);
-			  }
-               	  }
-			  T_DO N_STMT
-			   { }
-                ;
+            			  if ($2.type != BOOL)
+            			  {
+            			    semanticError(ERR_EXPR_MUST_BE_BOOL);
+            			    return(0);
+            			  }
+               	  } T_DO N_STMT {
+                    numTabs--;
+                    printf("\n");
+                    for(int i=0; i<numTabs; i++)
+                      printf("\t");
+                  };
+
+N_WHILESYMBOL   : T_WHILE {
+                  printf("while ");
+                };
+
 N_WRITE         : T_WRITE T_LPAREN {
-                    printf("print ");
+                    printf("print(");
                   } N_OUTPUT N_OUTPUTLST T_RPAREN
                	  {
+                    printf(", end='')" );
                 	  prRule("N_WRITE",
                           "T_WRITE T_LPAREN N_OUTPUT N_OUTPUTLST T_RPAREN");
                	  }
