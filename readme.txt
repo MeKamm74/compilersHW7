@@ -1,4 +1,4 @@
-Michael Kammeyer and Cody Borgschulte
+Authors: Michael Kammeyer and Cody Borgschulte
 
 This is the MIPL to Python compiler/translator.
 
@@ -28,3 +28,11 @@ expected_output, ignoring whitespace. You will need to make inputs during the
 process if you use the script, and the results will vary depending on the 
 inputs. We mainly used it to quickly create all of the output files and store 
 them properly.
+
+All of the sample_oal files are also included as well as the oal interpreter,
+so you can compare the results to the ones from HW7. The only differences will 
+come from the two aformentioned files.
+
+Thanks for using our compiler!
+
+-MK and CB
