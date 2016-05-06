@@ -51,40 +51,40 @@ def find():
 		loc = 0 
 	
 max = 0 
-print('>' , ' ' , end='')
+print('>' , ' ' , sep='', end='')
 data  = int(raw_input())
 
 while data >= 0 and max < 20 :
 	max = max + 1 
 	stuff [max - 1]= data 
-	print('>' , ' ' , end='')
+	print('>' , ' ' , sep='', end='')
 	data  = int(raw_input())
 	
 
 
 sort()
-print('(' , ' ' , end='')
+print('(' , ' ' , sep='', end='')
 i = 1 
 while i <= max :
-	print(stuff [i - 1], ' ' , end='')
+	print(stuff [i - 1], ' ' , sep='', end='')
 	i = i + 1 
 
 
-print(')' , '\n', end='')
-print('?' , ' ' , end='')
+print(')' , '\n', sep='', end='')
+print('?' , ' ' , sep='', end='')
 data  = int(raw_input())
 
 while data >= 0 :
 	find()
 	if loc == 0 :
-		print('N' , 'o' , ' ' , 'm' , 'a' , 't' , 'c' , 'h' , ' ' , 'f' , 'o' , 'r' , ' ' , data , '\n', end='')
+		print('N' , 'o' , ' ' , 'm' , 'a' , 't' , 'c' , 'h' , ' ' , 'f' , 'o' , 'r' , ' ' , data , '\n', sep='', end='')
 	else:
-		print('S' , 't' , 'u' , 'f' , 'f' , '[' , loc , ']' , ' ' , '=' , ' ' , data , '\n', end='')
+		print('S' , 't' , 'u' , 'f' , 'f' , '[' , loc , ']' , ' ' , '=' , ' ' , data , '\n', sep='', end='')
 	
-	print('?' , ' ' , end='')
+	print('?' , ' ' , sep='', end='')
 	data  = int(raw_input())
 	
 
 
-print('e' , 'n' , 'd' , '\n', end='')
+print('e' , 'n' , 'd' , '\n', sep='', end='')
 print()

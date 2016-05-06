@@ -16,22 +16,20 @@ var a : integer;
     procedure p1a_a;
     var f : integer;
     begin (* p1a_a *)
-      f := a + b;
-      a := f;
-      write('f','=',f,'\');
-      if f < 10
-         then p1a
-         else p0
+      f := 1 + 2;
+      write('f','=',f,'\')
     end;
 
   begin (* p1a *)
-    b := a + 1;
-    p1a_a
+    b := 1 + 1;
+    p1a_a;
+    write('b','=',b,'\')
   end;
 
 begin (* p1 *)
   a := 1;
-  p1a
+  p1a;
+  write('a','=',a,'\')
 end;
 
 begin

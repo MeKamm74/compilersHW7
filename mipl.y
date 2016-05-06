@@ -1130,7 +1130,7 @@ N_WRITE         : T_WRITE T_LPAREN {
                     printf("print(");
                   } N_OUTPUT N_OUTPUTLST T_RPAREN
                	  {
-                    printf(", end='')" );
+                    printf(", sep='', end='')" );
                 	  prRule("N_WRITE",
                           "T_WRITE T_LPAREN N_OUTPUT N_OUTPUTLST T_RPAREN");
                	  }

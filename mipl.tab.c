@@ -2111,9 +2111,9 @@ yyreduce:
 					          printf(" = int(raw_input())\n");
                   else
                     printf(" = raw_input()\n");
+                  
                   for(int i=0; i<numTabs; i++)
                     printf("\t");
-
 
       					  prRule("N_INPUTVAR", "N_VARIABLE");
       					  if (((yyvsp[0].typeInfo).type != INT) && ((yyvsp[0].typeInfo).type != CHAR))
@@ -2897,7 +2897,7 @@ yyreduce:
   case 117:
 #line 1132 "mipl.y" /* yacc.c:1646  */
     {
-                    printf(", end='')" );
+                    printf(", sep='', end='')" );
                 	  prRule("N_WRITE",
                           "T_WRITE T_LPAREN N_OUTPUT N_OUTPUTLST T_RPAREN");
                	  }
